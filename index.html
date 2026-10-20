@@ -203,8 +203,8 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #8DB3
 <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;text-align:center">
 <sc-for list="{{dow}}" as="d" hint-placeholder-count="7"><span style="font-size:12px;font-weight:600;color:#5A6577;padding:4px 0">{{d}}</span></sc-for>
 <sc-for list="{{days}}" as="d" hint-placeholder-count="35">
-<span class="calday" tabindex="{{d.tab}}" aria-label="{{d.aria}}" style="position:relative;height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px">
-<span style="width:32px;height:32px;display:grid;place-items:center;border-radius:50%;font-size:14px;font-variant-numeric:tabular-nums;background:{{d.bg}};color:{{d.fg}};font-weight:{{d.fw}}">{{d.n}}</span>
+<span class="calday" tabindex="{{d.tab}}" aria-label="{{d.aria}}" style="position:relative;height:40px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px">
+<span style="width:32px;height:32px;display:grid;place-items:center;border-radius:50%;font-size:14px;line-height:1;font-variant-numeric:tabular-nums;background:{{d.bg}};color:{{d.fg}};font-weight:{{d.fw}}">{{d.n}}</span>
 <span aria-hidden="true" style="height:6px;display:flex;gap:3px"><sc-for list="{{d.dots}}" as="dot" hint-placeholder-count="0"><span style="width:6px;height:6px;border-radius:50%;background:{{dot}}"></span></sc-for></span>
 <sc-if value="{{d.tip}}" hint-placeholder-val="{{false}}"><span class="caltip" role="tooltip">{{d.tip}}</span></sc-if>
 </span>
@@ -224,11 +224,30 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #8DB3
 <select style="font:inherit;font-size:14px;color:#172234;border:1px solid #D5DCE6;border-radius:8px;height:32px;padding:0 8px;background:#fff"><option>Next 7 days</option><option selected="selected">Next 28 days</option><option>Next 90 days</option></select>
 </label>
 </div>
+<div style="padding:4px 0 6px">
+<sc-for list="{{upGroups}}" as="g" hint-placeholder-count="3">
+<h3 style="margin:0;padding:12px 20px 6px;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:{{g.color}};display:flex;align-items:center;gap:6px">{{g.label}}<span style="font-size:11px;border-radius:999px;padding:0 7px;background:{{g.chipBg}};color:{{g.color}}">{{g.count}}</span></h3>
+<ul style="list-style:none;margin:0;padding:0 10px">
+<sc-for list="{{g.items}}" as="u" hint-placeholder-count="2">
+<li><a class="rowlink" href="matter.html" title="{{u.parties}}" style="display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px;color:#172234;text-decoration:none">
+<span aria-hidden="true" style="width:44px;flex:none;border-radius:8px;background:{{u.dateBg}};color:{{u.dateFg}};text-align:center;padding:4px 0;line-height:1.1"><span style="display:block;font-size:11px;font-weight:700;text-transform:uppercase">{{u.mon}}</span><span style="display:block;font-size:18px;font-weight:700;font-variant-numeric:tabular-nums">{{u.day}}</span></span>
+<span style="flex:1;min-width:0">
+<span style="display:flex;align-items:center;gap:6px"><span style="font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{u.title}}</span><span style="flex:none;font-size:11px;font-weight:700;border-radius:999px;padding:1px 7px;background:#F1F4F8;color:#3A4657;white-space:nowrap">{{u.acting}}</span></span>
+<span style="display:block;font-size:13px;color:#3A4657;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><strong style="color:#14335C">{{u.ref}}</strong> · <span style="color:{{u.whenColor}}">{{u.when}}</span> · {{u.partyShort}}</span>
+</span>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9AA7B8" stroke-width="2.4" aria-hidden="true" style="flex:none"><path d="M9 6l6 6-6 6"></path></svg>
+</a></li>
+</sc-for>
+</ul>
+</sc-for>
+<sc-if value="{{upEmpty}}" hint-placeholder-val="{{false}}">
 <div style="padding:28px 20px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px">
 <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#9AA7B8" stroke-width="1.6" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>
 <p style="margin:0;font-weight:600">Nothing due in the next 28 days</p>
 <p style="margin:0;font-size:14px;color:#5A6577;max-width:260px">Diary items, settlements and task deadlines for your matters will show here.</p>
 <button style="margin-top:6px;border:1px solid #D5DCE6;background:#fff;border-radius:8px;height:36px;padding:0 14px;font-size:14px;font-weight:600;color:#14335C">Add diary item</button>
+</div>
+</sc-if>
 </div>
 <div style="display:flex;justify-content:space-between;padding:12px 20px;border-top:1px solid #E3E8EF;background:#F9FAFC;font-size:14px;color:#3A4657">
 <span>Settled today</span><span style="font-weight:700;font-variant-numeric:tabular-nums">0</span>
@@ -345,6 +364,24 @@ class Component extends DCLogic {
       bar: pastel, numColor: c, tint
     }));
     const unit = 30;
+
+    const UP = [
+      { g: 'week', day: '23', mon: 'Oct', title: 'Settlement', kind: 'Settlement', ref: '00012', addr: '14 Prospect Road, Prospect SA 5082', parties: ['Grace Tan', 'Liam Walsh'], acting: 'Both', when: 'In 4 days' },
+      { g: 'later', day: '28', mon: 'Oct', title: 'Settlement', kind: 'Settlement', ref: '00015', addr: '7 Hill Street, Glenelg SA 5045', parties: ['Priya Nair'], acting: 'Vendor', when: 'In 9 days' }
+    ];
+    const GDEF = { overdue: ['Overdue', '#B42318', '#FEE4E2'], week: ['This week', '#14335C', '#E6EEF8'], later: ['Later', '#3A4657', '#F1F4F8'] };
+    const upGroups = ['overdue', 'week', 'later'].map(k => {
+      const items = UP.filter(u => u.g === k).map(u => {
+        const od = k === 'overdue', st = u.kind === 'Settlement';
+        return { ...u,
+          parties: u.parties.join(', '),
+          partyShort: u.parties[0] + (u.parties.length > 1 ? ' +' + (u.parties.length - 1) : ''),
+          dateBg: od ? '#FEE4E2' : (st ? '#E6EEF8' : '#F1F4F8'), dateFg: od ? '#B42318' : '#14335C',
+          kindBg: st ? '#E6EEF8' : '#F1F4F8', kindFg: st ? '#14335C' : '#3A4657',
+          whenColor: od ? '#B42318' : '#5A6577' };
+      });
+      return { label: GDEF[k][0], color: GDEF[k][1], chipBg: GDEF[k][2], count: items.length, items };
+    }).filter(g => g.items.length);
     const fullNames = { 'Oct 26':'October 2026','Nov 26':'November 2026','Dec 26':'December 2026','Jan 27':'January 2027','Feb 27':'February 2027','Mar 27':'March 2027','Apr 27':'April 2027','May 27':'May 2027' };
     const months = [
       ['Oct 26',1,1],['Nov 26',0,1],['Dec 26',2,0],['Jan 27',1,3],['Feb 27',2,1],['Mar 27',1,1],['Apr 27',1,1],['May 27',2,0]
@@ -403,7 +440,7 @@ class Component extends DCLogic {
       });
     }
     return {
-      stages, months, days, sel,
+      stages, months, days, sel, upGroups, upEmpty: upGroups.length === 0,
       closeSel: () => this.setState({ sel: null }),
       selKey: (e) => { if (e.key === 'Escape') this.setState({ sel: null }); },
       dow: ['Mo','Tu','We','Th','Fr','Sa','Su']
