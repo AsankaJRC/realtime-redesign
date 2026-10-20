@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Overdue settlements — Realtime Conveyancer</title>
+<script src="assets/runtime.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F4F6F9}
+a{color:#1F4B85;text-decoration:none}a:hover{color:#14335C;text-decoration:underline}
+.navlink{color:#3A4657;font-weight:500;padding:8px 12px;border-radius:8px}
+.navlink:hover{background:#EEF2F7;text-decoration:none;color:#14335C}
+button{font-family:inherit;cursor:pointer;transition:filter .15s,box-shadow .15s,background-color .15s}
+button:hover{filter:brightness(.94);box-shadow:0 1px 4px rgba(20,51,92,.16)}
+button:active{filter:brightness(.88);box-shadow:none}
+button[style*="transparent"]:hover{background-color:#EEF2F7 !important;filter:none;box-shadow:none}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #8DB3E8;outline-offset:2px}
+input[type=checkbox]{accent-color:#14335C}
+.orow:hover{background:#FAFBFD}
+.th{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#5A6577;text-align:left;padding:10px 12px;white-space:nowrap}
+.td{padding:14px 12px;min-width:0}
+</style>
+</helmet>
+<div style="font-family:'Source Sans 3',ui-sans-serif,system-ui,sans-serif;color:#172234;font-size:15px;line-height:1.45;min-height:100vh;background:#F4F6F9">
+
+<!-- Top bar -->
+<header style="background:#fff;border-bottom:1px solid #E3E8EF">
+<div style="max-width:1360px;margin:0 auto;padding:10px 24px;display:flex;flex-wrap:wrap;align-items:center;gap:16px">
+<a href="index.html" style="display:flex;align-items:center;text-decoration:none;padding:4px 0">
+<img src="assets/realtime-logo.png" alt="Realtime Conveyancer home" style="height:36px;width:auto;display:block">
+</a>
+<nav aria-label="Primary" style="display:flex;flex-wrap:wrap;gap:2px;flex:1 1 auto">
+<a class="navlink" href="index.html">Dashboard</a>
+<a class="navlink" href="#" aria-current="page" style="background:#EEF2F7;color:#14335C;font-weight:600">Matters</a>
+<a class="navlink" href="#">Diary</a>
+<a class="navlink" href="#">Quotes</a>
+<a class="navlink" href="#">Contacts</a>
+<a class="navlink" href="#">Organisation</a>
+</nav>
+<button onClick="{{sOpenFn}}" aria-label="Search (Ctrl+K)" title="Search · Ctrl+K or /" style="width:40px;height:40px;border:0;background:transparent;border-radius:10px;display:grid;place-items:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3A4657" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg></button>
+<button style="display:flex;align-items:center;gap:6px;background:#14335C;color:#fff;border:0;border-radius:10px;height:40px;padding:0 16px;font-weight:600;font-size:15px">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>New</button>
+<button aria-label="Account: Muzain SA" style="display:flex;align-items:center;gap:8px;border:0;background:transparent;padding:4px 8px 4px 4px;border-radius:999px;font-size:14px;color:#172234">
+<span style="width:32px;height:32px;border-radius:50%;background:#14335C;color:#fff;display:grid;place-items:center;font-weight:600;font-size:13px">MS</span>Muzain SA</button>
+</div>
+</header>
+
+<main style="max-width:1360px;margin:0 auto;padding:24px 24px 48px;display:flex;flex-direction:column;gap:16px">
+
+<div>
+<nav aria-label="Breadcrumb" style="font-size:14px;color:#5A6577;display:flex;gap:6px"><a href="#">Matters</a><span aria-hidden="true">/</span><span aria-current="page">Overdue settlements</span></nav>
+<div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;margin-top:8px">
+<div>
+<h1 style="margin:0;font-size:28px;line-height:1.2;color:#14335C;font-weight:700">Overdue settlements <span style="display:inline-block;vertical-align:5px;margin-left:6px;background:#FEE4E2;color:#B42318;font-size:15px;border-radius:999px;padding:1px 10px">{{openCount}}</span></h1>
+<p style="margin:4px 0 0;color:#5A6577">Matters past their contractual settlement date. Book a new date, or mark them settled if settlement already happened.</p>
+</div>
+<label style="display:flex;align-items:center;gap:8px;font-size:14px;color:#3A4657">Sort by
+<select style="font:inherit;font-size:14px;border:1px solid #D5DCE6;border-radius:8px;height:36px;padding:0 8px;background:#fff;color:#172234"><option>Most overdue first</option><option>Settlement date</option><option>Assignee</option></select>
+</label>
+</div>
+</div>
+
+<!-- Toast -->
+<sc-if value="{{toast}}" hint-placeholder-val="{{false}}">
+<div role="status" style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;background:#E3F4EA;border:1px solid #A8DCC0;border-radius:10px;padding:10px 14px;color:#14532D">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1F7A4F" stroke-width="2.6" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+<span style="flex:1;font-weight:600">{{toast}}</span>
+<button onClick="{{undo}}" style="border:1px solid #1F7A4F;background:#fff;color:#1A6B45;border-radius:8px;height:32px;padding:0 12px;font-size:14px;font-weight:700">Undo</button>
+</div>
+</sc-if>
+
+<section aria-label="Overdue matters" style="background:#fff;border:1px solid #E3E8EF;border-radius:14px;overflow:hidden">
+
+<!-- Bulk bar -->
+<sc-if value="{{hasSel}}" hint-placeholder-val="{{false}}">
+<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:10px 14px;background:#E6EEF8;border-bottom:1px solid #C9D4E3">
+<span style="font-weight:700;color:#14335C">{{selCount}} selected</span>
+<button onClick="{{bulkSettle}}" style="border:0;background:#14335C;color:#fff;border-radius:8px;height:34px;padding:0 14px;font-size:14px;font-weight:600">Mark {{selCount}} as settled</button>
+<button style="border:1px solid #9AAAC0;background:#fff;color:#14335C;border-radius:8px;height:34px;padding:0 14px;font-size:14px;font-weight:600">Reassign</button>
+<span style="font-size:13px;color:#3A4657">Booking needs a date for each matter, so it’s done row by row.</span>
+<button onClick="{{clearSel}}" style="margin-left:auto;border:0;background:transparent;color:#1F4B85;border-radius:8px;height:34px;padding:0 10px;font-size:14px;font-weight:600">Clear selection</button>
+</div>
+</sc-if>
+
+<div style="overflow-x:auto">
+<div role="table" aria-label="Overdue matters" style="min-width:1120px">
+<div role="row" class="ohead" style="display:grid;grid-template-columns:44px minmax(220px,2fr) minmax(120px,1.1fr) minmax(110px,1fr) 100px minmax(100px,.9fr) minmax(130px,1.1fr) minmax(300px,1.6fr);align-items:center;background:#F7F9FC;border-bottom:1px solid #E3E8EF">
+<div role="columnheader" class="th"><input type="checkbox" aria-label="Select all overdue matters" checked="{{allSel}}" onChange="{{toggleAll}}" style="width:18px;height:18px;margin:0"></div>
+<div role="columnheader" class="th">Matter</div>
+<div role="columnheader" class="th">Acting for</div>
+<div role="columnheader" class="th">Settlement date</div>
+<div role="columnheader" class="th">Overdue</div>
+<div role="columnheader" class="th">Blockers</div>
+<div role="columnheader" class="th">Assignee</div>
+<div role="columnheader" class="th" style="text-align:right">Actions</div>
+</div>
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="3">
+<div role="row" class="orow" style="display:grid;grid-template-columns:44px minmax(220px,2fr) minmax(120px,1.1fr) minmax(110px,1fr) 100px minmax(100px,.9fr) minmax(130px,1.1fr) minmax(300px,1.6fr);align-items:center;border-bottom:1px solid #EEF1F5;opacity:{{r.opacity}}">
+<div role="cell" class="td"><input type="checkbox" aria-label="Select {{r.ref}}" checked="{{r.sel}}" onChange="{{r.toggle}}" style="width:18px;height:18px;margin:0"></div>
+<div role="cell" class="td"><a href="matter.html" style="font-weight:700;color:#14335C">{{r.ref}}</a><span style="display:block;font-size:14px;color:#3A4657">{{r.addr}}</span></div>
+<div role="cell" class="td" style="font-size:14px">{{r.acting}}</div>
+<div role="cell" class="td" style="font-size:14px;font-variant-numeric:tabular-nums">{{r.date}}</div>
+<div role="cell" class="td"><span style="font-size:13px;font-weight:700;border-radius:999px;padding:2px 10px;background:{{r.odBg}};color:{{r.odFg}};white-space:nowrap">{{r.overdue}}</span></div>
+<div role="cell" class="td"><span title="{{r.blockTip}}" style="font-size:13px;font-weight:600;color:{{r.blockColor}};white-space:nowrap">{{r.blockers}}</span></div>
+<div role="cell" class="td"><span style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#3A4657;background:#F1F4F8;border-radius:999px;padding:3px 10px 3px 3px;white-space:nowrap"><span style="width:22px;height:22px;border-radius:50%;background:#C9D4E3;color:#14335C;display:grid;place-items:center;font-size:11px;font-weight:700">{{r.initials}}</span>{{r.assignee}}</span></div>
+<div role="cell" class="td" style="text-align:right;white-space:nowrap">
+<sc-if value="{{r.open}}" hint-placeholder-val="{{true}}">
+<span style="display:inline-flex;gap:6px">
+<button style="border:0;background:#B42318;color:#fff;border-radius:8px;height:32px;padding:0 12px;font-size:13px;font-weight:600">Book settlement</button>
+<button onClick="{{r.settle}}" style="border:1px solid #C9D4E3;background:#fff;color:#14335C;border-radius:8px;height:32px;padding:0 12px;font-size:13px;font-weight:600">Mark settled</button>
+</span>
+</sc-if>
+<sc-if value="{{r.settled}}" hint-placeholder-val="{{false}}">
+<span style="display:inline-flex;align-items:center;gap:10px"><span style="font-size:13px;font-weight:700;border-radius:999px;padding:2px 10px;background:#E3F4EA;color:#1A6B45">Settled today</span><button onClick="{{r.unsettle}}" style="border:0;background:transparent;color:#1F4B85;border-radius:8px;height:32px;padding:0 8px;font-size:13px;font-weight:600">Undo</button></span>
+</sc-if>
+</div>
+</div>
+</sc-for>
+</div>
+</div>
+<sc-if value="{{allDone}}" hint-placeholder-val="{{false}}">
+<p style="margin:0;padding:16px;text-align:center;font-weight:600;color:#1A6B45;background:#F2FAF6">All overdue matters are cleared.</p>
+</sc-if>
+</section>
+</main>
+
+<!-- Global search -->
+<sc-if value="{{sOpen}}" hint-placeholder-val="{{false}}">
+<div onClick="{{sClose}}" style="position:fixed;inset:0;z-index:60;background:rgba(23,34,52,.35);display:flex;justify-content:center;align-items:flex-start;padding:12vh 16px 16px">
+<div role="dialog" aria-modal="true" aria-label="Search" onClick="{{sStop}}" style="width:100%;max-width:600px;background:#fff;border-radius:14px;box-shadow:0 24px 60px rgba(20,51,92,.28);overflow:hidden;font-family:'Source Sans 3',ui-sans-serif,system-ui,sans-serif">
+<div style="display:flex;align-items:center;gap:10px;padding:0 16px;border-bottom:1px solid #E3E8EF">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5A6577" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+<input id="gsearch-input" autofocus="autofocus" type="text" value="{{sq}}" onInput="{{sInput}}" onKeyDown="{{sKey}}" placeholder="Search matters, addresses, contacts" role="combobox" aria-expanded="true" aria-controls="gsearch-list" aria-activedescendant="{{sActiveId}}" aria-label="Search" style="flex:1;min-width:0;border:0;outline:none;height:56px;font:inherit;font-size:17px;color:#172234;background:transparent">
+<kbd style="font-family:inherit;font-size:12px;color:#5A6577;border:1px solid #D5DCE6;border-radius:5px;padding:1px 6px">Esc</kbd>
+</div>
+<div id="gsearch-list" role="listbox" style="max-height:380px;overflow:auto;padding:6px 6px 8px">
+<sc-for list="{{sGroups}}" as="g" hint-placeholder-count="2">
+<p style="margin:8px 10px 4px;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#5A6577">{{g.label}}</p>
+<sc-for list="{{g.items}}" as="it" hint-placeholder-count="3">
+<a id="{{it.id}}" role="option" aria-selected="{{it.sel}}" href="{{it.href}}" onMouseEnter="{{it.hover}}" style="display:flex;align-items:center;gap:12px;padding:9px 10px;border-radius:9px;background:{{it.bg}};color:#172234;text-decoration:none">
+<span aria-hidden="true" style="width:32px;height:32px;border-radius:8px;background:{{it.iconBg}};display:grid;place-items:center;flex:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="{{it.iconFg}}" stroke-width="2.2"><path d="{{it.icon}}"></path></svg></span>
+<span style="flex:1;min-width:0"><span style="display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{it.title}}</span><span style="display:block;font-size:13px;color:#5A6577;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{it.sub}}</span></span>
+<sc-if value="{{it.sel}}" hint-placeholder-val="{{false}}"><kbd style="font-family:inherit;font-size:12px;color:#14335C;border:1px solid #C9D4E3;border-radius:5px;padding:1px 6px;background:#fff">↵</kbd></sc-if>
+</a>
+</sc-for>
+</sc-for>
+<sc-if value="{{sNone}}" hint-placeholder-val="{{false}}"><p style="margin:0;padding:28px 12px;text-align:center;color:#5A6577">No matters or contacts match “{{sq}}”.</p></sc-if>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:6px 16px;padding:10px 16px;border-top:1px solid #E3E8EF;background:#F7F9FC;font-size:12px;color:#5A6577">
+<span>↑ ↓ to move</span><span>↵ to open</span><span>Esc to close</span><span style="margin-left:auto">Open anytime with Ctrl K or /</span>
+</div>
+</div>
+</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":760}}'>
+
+function rcSearchVals(c) {
+  if (!c._sk) {
+    c._sk = true;
+    window.addEventListener('keydown', (e) => {
+      const t = e.target, typing = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable);
+      if ((e.key === 'k' || e.key === 'K') && (e.ctrlKey || e.metaKey)) { e.preventDefault(); c._sOpen(); }
+      else if (e.key === '/' && !typing) { e.preventDefault(); c._sOpen(); }
+    });
+    c._sOpen = () => { c.setState({ sOpen: true, sq: '', sIdx: 0 }); setTimeout(() => { const el = document.getElementById('gsearch-input'); if (el) el.focus(); }, 30); };
+  }
+  const st = c.state || {};
+  const q = (st.sq || '').trim().toLowerCase();
+  const M = 'M3 11l9-7 9 7v9a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z';
+  const P = 'M12 12a4 4 0 100-8 4 4 0 000 8zM4 21c0-4 4-6 8-6s8 2 8 6';
+  const matters = [
+    ['00003', '3 Overland Road, Croydon Park SA 5008', 'Lenkov → Kellog · Overdue', 'matter.html'],
+    ['00008', '21 Rundle Street, Kent Town SA 5067', 'Proprietor on title · Overdue', 'overdue.html'],
+    ['00010', '6 Beach Road, Christies Beach SA 5165', 'Both parties · Overdue', 'overdue.html'],
+    ['00012', '14 Prospect Road, Prospect SA 5082', 'Both parties · Settles 23 Oct 2026', 'matter.html'],
+    ['00015', '7 Hill Street, Glenelg SA 5045', 'Proprietor on title · Settles 28 Oct 2026', 'matter.html'],
+    ['00026', '9 Unley Road, Unley SA 5061', 'Both parties · Settles 8 Jan 2027', 'matter.html']
+  ];
+  const people = [
+    ['Juin Ivan Lenkov “John”', 'Vendor · 00003 Croydon Park'],
+    ['Michael Kellog “Mick”', 'Purchaser · 00003 Croydon Park'],
+    ['Juin agent Testing', 'Vendor’s agent · Juin Real Estate · 00003'],
+    ['Anna · Fayesbook', 'Purchaser’s agent · 00003'],
+    ['Juin Broker Inc', 'Broker · 00003']
+  ];
+  let groups;
+  if (!q) {
+    groups = [{ label: 'Recently opened', items: matters.slice(0, 3).map(m => ({ title: m[0] + ' · ' + m[1], sub: m[2], href: m[3], icon: M, iconBg: '#E6EEF8', iconFg: '#14335C' })) }];
+  } else {
+    const mm = matters.filter(m => (m[0] + ' ' + m[1] + ' ' + m[2]).toLowerCase().includes(q)).map(m => ({ title: m[0] + ' · ' + m[1], sub: m[2], href: m[3], icon: M, iconBg: '#E6EEF8', iconFg: '#14335C' }));
+    const pp = people.filter(p => (p[0] + ' ' + p[1]).toLowerCase().includes(q)).map(p => ({ title: p[0], sub: p[1], href: 'matter.html', icon: P, iconBg: '#F1F4F8', iconFg: '#3A4657' }));
+    groups = [];
+    if (mm.length) groups.push({ label: 'Matters & addresses', items: mm });
+    if (pp.length) groups.push({ label: 'Contacts', items: pp });
+  }
+  const flat = [];
+  groups.forEach(g => g.items.forEach(it => flat.push(it)));
+  const n = flat.length;
+  const idx = n ? Math.min(st.sIdx || 0, n - 1) : -1;
+  flat.forEach((it, i) => {
+    it.id = 'gs-opt-' + i; it.sel = i === idx ? 'true' : false; it.bg = i === idx ? '#EEF2F7' : 'transparent';
+    it.hover = () => { if ((c.state.sIdx || 0) !== i) c.setState({ sIdx: i }); };
+  });
+  return {
+    sOpen: !!st.sOpen, sq: st.sq || '', sGroups: groups, sNone: !!q && n === 0, sActiveId: idx >= 0 ? 'gs-opt-' + idx : '',
+    sOpenFn: () => c._sOpen(),
+    sClose: () => c.setState({ sOpen: false }),
+    sStop: (e) => e.stopPropagation(),
+    sInput: (e) => c.setState({ sq: e.target.value, sIdx: 0 }),
+    sKey: (e) => {
+      if (e.key === 'ArrowDown') { e.preventDefault(); if (n) c.setState({ sIdx: (idx + 1) % n }); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); if (n) c.setState({ sIdx: (idx - 1 + n) % n }); }
+      else if (e.key === 'Enter') { e.preventDefault(); const el = document.getElementById('gs-opt-' + idx); if (el) el.click(); }
+      else if (e.key === 'Escape') { e.preventDefault(); c.setState({ sOpen: false }); }
+    }
+  };
+}
+class Component extends DCLogic {
+  renderVals() { return { ...this._rv(), ...rcSearchVals(this) }; }
+  constructor(p){ super(p); this.state = { sel: {}, settled: {}, last: [] }; }
+  _rv() {
+    const data = [
+      { id: '00003', addr: '3 Overland Road, Croydon Park SA 5008', acting: 'Both parties', date: '22 Sep 2025', days: 392, blockers: 6, blockTip: 'VOI × 2, Volume/Folio, Bank details, PEXA workspace, Not booked', assignee: 'Juin SA', initials: 'JS' },
+      { id: '00008', addr: '21 Rundle Street, Kent Town SA 5067', acting: 'Proprietor on title', date: '30 Jul 2026', days: 81, blockers: 2, blockTip: 'Bank details, Not booked', assignee: 'Muzain SA', initials: 'MS' },
+      { id: '00010', addr: '6 Beach Road, Christies Beach SA 5165', acting: 'Both parties', date: '2 Oct 2026', days: 17, blockers: 0, blockTip: 'Ready to settle', assignee: 'Muzain SA', initials: 'MS' }
+    ];
+    const { sel, settled } = this.state;
+    const rows = data.map(d => {
+      const isSet = !!settled[d.id];
+      return {
+        ref: d.id, addr: d.addr, acting: d.acting, date: d.date, assignee: d.assignee, initials: d.initials, blockTip: d.blockTip,
+        overdue: d.days + (d.days === 1 ? ' day' : ' days'),
+        odBg: d.days > 60 ? '#FEE4E2' : '#FFF4D6', odFg: d.days > 60 ? '#B42318' : '#7A4F00',
+        blockers: d.blockers ? d.blockers + (d.blockers === 1 ? ' blocker' : ' blockers') : 'Ready',
+        blockColor: d.blockers ? '#912018' : '#1A6B45',
+        sel: !!sel[d.id] && !isSet, settled: isSet, open: !isSet, opacity: isSet ? '0.6' : '1',
+        toggle: () => this.setState({ sel: { ...this.state.sel, [d.id]: !this.state.sel[d.id] } }),
+        settle: () => this.setState({ settled: { ...this.state.settled, [d.id]: true }, sel: { ...this.state.sel, [d.id]: false }, last: [d.id] }),
+        unsettle: () => { const s = { ...this.state.settled }; delete s[d.id]; this.setState({ settled: s, last: [] }); }
+      };
+    });
+    const openRows = rows.filter(r => r.open);
+    const selIds = data.filter(d => sel[d.id] && !settled[d.id]).map(d => d.id);
+    const last = this.state.last;
+    const toast = last.length ? (last.length === 1 ? last[0] + ' marked as settled.' : last.length + ' matters marked as settled.') : false;
+    return {
+      rows, openCount: openRows.length, allDone: openRows.length === 0,
+      selCount: selIds.length, hasSel: selIds.length > 0,
+      allSel: openRows.length > 0 && selIds.length === openRows.length,
+      toast,
+      toggleAll: () => {
+        const all = openRows.length > 0 && selIds.length === openRows.length;
+        const n = {}; if (!all) data.forEach(d => { if (!settled[d.id]) n[d.id] = true; });
+        this.setState({ sel: n });
+      },
+      clearSel: () => this.setState({ sel: {} }),
+      bulkSettle: () => {
+        const s = { ...this.state.settled }; selIds.forEach(id => { s[id] = true; });
+        this.setState({ settled: s, sel: {}, last: selIds });
+      },
+      undo: () => {
+        const s = { ...this.state.settled }; this.state.last.forEach(id => { delete s[id]; });
+        this.setState({ settled: s, last: [] });
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>
